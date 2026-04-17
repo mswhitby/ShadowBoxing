@@ -7,6 +7,8 @@ class Player {
     boolean isGuesser;
     boolean isComputer;
 
+    static String[] directions = new String[] {"Up", "Down", "Left", "Right"};
+
     public Player(String name) {
         this.name = name;
         this.isComputer = false;
@@ -30,41 +32,42 @@ class Player {
 
      public void resetMoves() {
         this.moves = new ArrayList<>();
-        this.movesLeft = new ArrayList<>();
-        this.movesLeft.add("Up");
-        this.movesLeft.add("Down");
-        this.movesLeft.add("Left");
-        this.movesLeft.add("Right");
+        this.movesLeft = new ArrayList<>(Arrays.asList(directions));
      }
 }
 
 class PlayShadowBoxing {
     Random random;
     Scanner scanner;
-    Player player1;
-    Player player2;
+    Player player;
+    Player computer;
+    ArrayList<Player> players;
     int round;
     int strikes;
 
+    static String[] directions = new String[] {"Up", "Down", "Left", "Right"};
+    static String[] directionsShort = new String[] {"u", "d", "l", "r"};
 
-    public PlayShadowBoxing(Player player1, Player player2) {
+
+    public PlayShadowBoxing(Player player, Player computer) {
         this.random = new Random();
         this.scanner = new Scanner(System.in);
-        this.player1 = player1;
-        this.player2 = player2;
-        this.round = 1;
 
-        newGame();
+        this.player = player;
+        this.computer = computer;
+        this.players = new ArrayList<>(Arrays.asList(player, computer));
     }
 
     public void newGame() {
         getFirstGuesser();
+        round = 1;
         playRound();
     }
 
 
     public void playRound() {
 
+        int moves = 1;
         while (true) {
             System.out.println("Enter your move (u/d/l/r)");
             String nextMove = scanner.nextLine();
@@ -72,57 +75,66 @@ class PlayShadowBoxing {
             if (Objects.equals(nextMove, "exit")) break;
 
             System.out.println("Round: " + round);
-            player1.addMove(getDirection(nextMove));
-            player2.addMove(getCompMove(player2));
+            player.addMove(getDirection(nextMove));
+            computer.addMove(getCompMove(computer));
 
-            System.out.println(player1.name + ": " + player1.moves);
-            System.out.println(player2.name + ": " + player2.moves);
+            Player guesser = players.get(0);
+            Player defender = players.get(1);
+            System.out.println(guesser.name + ": " + guesser.moves);
+            System.out.println(defender.name + ": " + defender.moves);
 
             strikes = 0;
-            for (int i = 1; i <= round; i++) {
-
-                if (player1.moves.get(round - 1).equals(player2.moves.get(round - 1))) strikes++;
+            for (int i = 1; i <= moves; i++) {
+                if (player.moves.get(i - 1).equals(computer.moves.get(i - 1))) strikes++;
             }
 
-            System.out.println("Strikes: " + strikes);
-            if (strikes == round) {
-                round++;
+            System.out.printf("Strikes: %s, Moves %s %n%n", strikes, moves);
+            if (strikes == moves) {
+                moves++;
             }
             else {
-                round = 1;
-                player1.resetMoves();;
-                player2.resetMoves();
+                moves = 1;
+                swapRoles();
             }
 
-
-
-
-
-
-
-
+            if (strikes == 3) {
+                System.out.printf("%s is the winner! %n", guesser.name);
+                System.out.printf("Better luck next time %s %n", defender.name);
+                break;
+            }
 
         }
     }
 
     void getFirstGuesser() {
-        Player[] players = {player1, player2};
         int first = random.nextInt(2);
-        Player guesser = players[first];
-        Player defender = players[1 - first];
+        Player guesser = players.get(first);
+        Player defender = players.get(1 - first);
 
         guesser.updateGuesser(true);
         defender.updateGuesser(false);
+
+        if (first == 1) Collections.rotate(players, 1);
+        // System.out.printf("First: %s, guesser: %s, defender: %s %n%n", first, guesser.name, defender.name);
+
+        System.out.printf("%s will guess first, and %s will defend %n", guesser.name, defender.name);
     }
 
-    static String getDirection(String d) {
-        switch (d.toLowerCase()) {
-            case "u": return "Up";
-            case "d": return "Down";
-            case "l": return "Left";
-            case "r": return "Right";
-            default: return null;
-        }
+    void swapRoles() {
+        Collections.rotate(players, 1);
+        Player guesser = players.get(0);
+        Player defender = players.get(1);
+
+        guesser.updateGuesser(true);
+        defender.updateGuesser(false);
+        System.out.printf("%s is now guessing, and %s is defending %n", guesser.name, defender.name);
+
+        guesser.resetMoves();
+        defender.resetMoves();
+    }
+
+    static String getDirection(String letter) {
+        return directions[Arrays.asList(directionsShort).indexOf(letter)];
     }
 
     String getCompMove(Player player) {
@@ -144,6 +156,7 @@ public class ShadowBoxing {
         Player player = new Player(playerName);
         Player computer = new Player("Computer", true);
         PlayShadowBoxing game = new PlayShadowBoxing(player, computer);
+        game.newGame();
     }
 }
 
