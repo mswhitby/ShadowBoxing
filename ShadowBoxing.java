@@ -1,36 +1,40 @@
-import java.util.Arrays;
-import java.util.Objects;
-import java.util.Random;
-import java.util.Scanner;
+import java.util.*;
 
 class Player {
     String name;
-    String[] moves;
+    ArrayList<String> moves;
+    ArrayList<String> movesLeft;
     boolean isGuesser;
     boolean isComputer;
 
     public Player(String name) {
         this.name = name;
-        this.moves = new String[10];
         this.isComputer = false;
+        this.resetMoves();
     }
 
     public Player(String name, boolean isComputer) {
         this.name = name;
-        this.moves = new String[10];
         this.isComputer = isComputer;
+        this.resetMoves();
     }
 
     public void updateGuesser(boolean isGuesser) {
         this.isGuesser = isGuesser;
      }
 
-     public void addMove(String move, int round) {
-        this.moves[round - 1] = move;
+     public void addMove(String move) {
+        this.moves.add(move);
+        this.movesLeft.remove(move);
      }
 
      public void resetMoves() {
-        this.moves = new String[10];
+        this.moves = new ArrayList<>();
+        this.movesLeft = new ArrayList<>();
+        this.movesLeft.add("Up");
+        this.movesLeft.add("Down");
+        this.movesLeft.add("Left");
+        this.movesLeft.add("Right");
      }
 }
 
@@ -68,16 +72,16 @@ class PlayShadowBoxing {
             if (Objects.equals(nextMove, "exit")) break;
 
             System.out.println("Round: " + round);
-            player1.addMove(getDirection(nextMove), round);
-            player2.addMove(getDirection(getCompMove()), round);
+            player1.addMove(getDirection(nextMove));
+            player2.addMove(getCompMove(player2));
 
-            System.out.println(player1.name + ": " + Arrays.toString(player1.moves));
-            System.out.println(player2.name + ": " + Arrays.toString(player2.moves));
+            System.out.println(player1.name + ": " + player1.moves);
+            System.out.println(player2.name + ": " + player2.moves);
 
             strikes = 0;
             for (int i = 1; i <= round; i++) {
 
-                if (player1.moves[round - 1].equals(player2.moves[round - 1])) strikes++;
+                if (player1.moves.get(round - 1).equals(player2.moves.get(round - 1))) strikes++;
             }
 
             System.out.println("Strikes: " + strikes);
@@ -121,11 +125,11 @@ class PlayShadowBoxing {
         }
     }
 
-    String getCompMove() {
+    String getCompMove(Player player) {
         // We can ues a "Character" array to store all moves
-        String[] directions = {"u", "d", "l", "r"};
+        // String[] directions = {"u", "d", "l", "r"};
         // We generate a random number from 0 to 4 to select a move by index
-        return directions[random.nextInt(4)];
+        return player.movesLeft.get(random.nextInt(player.movesLeft.size()));
     }
 
 }
