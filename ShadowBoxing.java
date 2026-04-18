@@ -15,11 +15,11 @@ class Player {
     ArrayList<String> moves;
     ArrayList<String> movesLeft;
     boolean isGuesser;
-    boolean isComputer;
+    int score;
 
     public Player(String name) {
         this.name = name;
-        this.isComputer = false;
+        this.score = 0;
         this.resetMoves();
     }
 
@@ -45,6 +45,10 @@ class Player {
         this.moves = new ArrayList<>();
         this.movesLeft = new ArrayList<>(Arrays.asList(Const.directions));
      }
+
+     public void addPoint() {
+        score++;
+     }
 }
 
 class ComputerPlayer extends Player {
@@ -55,7 +59,7 @@ class ComputerPlayer extends Player {
 
     @Override
     public void getNextMove() {
-        if (movesLeft.size() == 4) {
+        if (moves.isEmpty()) {
             int val = Const.random.nextInt(100);
             if (val <= 70) {
                 String[] upDown = new String[] {"Up", "Down"};
@@ -133,6 +137,11 @@ class PlayShadowBoxing {
             if (strikes == 3) {
                 System.out.printf("%s is the winner! %n", guesser.name);
                 System.out.printf("Better luck next time %s %n", defender.name);
+                
+                // 1. Add a point for the winner
+                // 2. Display the score on the screen
+                // 3. Ask the player if they want to play again
+
                 break;
             }
 
