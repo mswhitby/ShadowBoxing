@@ -1,13 +1,21 @@
 import java.util.*;
 
+class Const {
+    static Scanner scanner = new Scanner(System.in);
+    static Random random = new Random();
+
+    static String[] directions = new String[] {"Up", "Down", "Left", "Right"};
+    static String[] directionsShort = new String[] {"u", "d", "l", "r"};
+}
+
+
 class Player {
     String name;
+    String nextMove;
     ArrayList<String> moves;
     ArrayList<String> movesLeft;
     boolean isGuesser;
     boolean isComputer;
-
-    static String[] directions = new String[] {"Up", "Down", "Left", "Right"};
 
     public Player(String name) {
         this.name = name;
@@ -15,15 +23,18 @@ class Player {
         this.resetMoves();
     }
 
-    public Player(String name, boolean isComputer) {
-        this.name = name;
-        this.isComputer = isComputer;
-        this.resetMoves();
-    }
-
     public void updateGuesser(boolean isGuesser) {
         this.isGuesser = isGuesser;
-     }
+    }
+
+    static String getDirection(String letter) {
+        return Const.directions[Arrays.asList(Const.directionsShort).indexOf(letter)];
+    }
+
+    public void getNextMove() {
+        String nextMove = Const.scanner.nextLine();
+        this.nextMove = getDirection(nextMove);
+    }
 
      public void addMove(String move) {
         this.moves.add(move);
@@ -32,30 +43,51 @@ class Player {
 
      public void resetMoves() {
         this.moves = new ArrayList<>();
-        this.movesLeft = new ArrayList<>(Arrays.asList(directions));
+        this.movesLeft = new ArrayList<>(Arrays.asList(Const.directions));
      }
+}
+
+class ComputerPlayer extends Player {
+
+    public ComputerPlayer(String name) {
+        super(name);
+    }
+
+    @Override
+    public void getNextMove() {
+        if (movesLeft.size() == 4) {
+            int val = Const.random.nextInt(100);
+            if (val <= 70) {
+                String[] upDown = new String[] {"Up", "Down"};
+                this.nextMove = upDown[Const.random.nextInt(2)];
+            }
+
+            else {
+                String[] leftRight = new String[] {"Left", "Right"};
+                this.nextMove = leftRight[Const.random.nextInt(2)];
+            }
+        } else {
+            this.nextMove = movesLeft.get(Const.random.nextInt(movesLeft.size()));
+        }
+    }
 }
 
 class PlayShadowBoxing {
     Random random;
     Scanner scanner;
-    Player player;
-    Player computer;
+    Player player1;
+    Player player2;
     ArrayList<Player> players;
     int round;
     int strikes;
 
-    static String[] directions = new String[] {"Up", "Down", "Left", "Right"};
-    static String[] directionsShort = new String[] {"u", "d", "l", "r"};
+    public PlayShadowBoxing(Player player1, Player player2) {
+        this.random = Const.random;
+        this.scanner = Const.scanner;
 
-
-    public PlayShadowBoxing(Player player, Player computer) {
-        this.random = new Random();
-        this.scanner = new Scanner(System.in);
-
-        this.player = player;
-        this.computer = computer;
-        this.players = new ArrayList<>(Arrays.asList(player, computer));
+        this.player1 = player1;
+        this.player2 = player2;
+        this.players = new ArrayList<>(Arrays.asList(player1, player2));
     }
 
     public void newGame() {
@@ -70,13 +102,15 @@ class PlayShadowBoxing {
         int moves = 1;
         while (true) {
             System.out.println("Enter your move (u/d/l/r)");
-            String nextMove = scanner.nextLine();
 
-            if (Objects.equals(nextMove, "exit")) break;
+            player1.getNextMove();
+            player2.getNextMove();
+
+            if (Objects.equals(player1.nextMove, "exit") || Objects.equals(player2.nextMove, "exit")) break;
 
             System.out.println("Round: " + round);
-            player.addMove(getDirection(nextMove));
-            computer.addMove(getCompMove(computer));
+            player1.addMove(player1.nextMove);
+            player2.addMove(player2.nextMove);
 
             Player guesser = players.get(0);
             Player defender = players.get(1);
@@ -85,14 +119,13 @@ class PlayShadowBoxing {
 
             strikes = 0;
             for (int i = 1; i <= moves; i++) {
-                if (player.moves.get(i - 1).equals(computer.moves.get(i - 1))) strikes++;
+                if (player1.moves.get(i - 1).equals(player2.moves.get(i - 1))) strikes++;
             }
 
             System.out.printf("Strikes: %s, Moves %s %n%n", strikes, moves);
             if (strikes == moves) {
                 moves++;
-            }
-            else {
+            } else {
                 moves = 1;
                 swapRoles();
             }
@@ -132,29 +165,16 @@ class PlayShadowBoxing {
         guesser.resetMoves();
         defender.resetMoves();
     }
-
-    static String getDirection(String letter) {
-        return directions[Arrays.asList(directionsShort).indexOf(letter)];
-    }
-
-    String getCompMove(Player player) {
-        // We can ues a "Character" array to store all moves
-        // String[] directions = {"u", "d", "l", "r"};
-        // We generate a random number from 0 to 4 to select a move by index
-        return player.movesLeft.get(random.nextInt(player.movesLeft.size()));
-    }
-
 }
 
 public class ShadowBoxing {
-    static Scanner scanner = new Scanner(System.in);
-    static Random random = new Random();
+    static Scanner scanner = Const.scanner;
 
     public static void main(String[] args) {
         System.out.println("What is your name");
         String playerName = scanner.nextLine();
         Player player = new Player(playerName);
-        Player computer = new Player("Computer", true);
+        Player computer = new ComputerPlayer("Computer");
         PlayShadowBoxing game = new PlayShadowBoxing(player, computer);
         game.newGame();
     }
