@@ -65,7 +65,6 @@ class ComputerPlayer extends Player {
                 String[] upDown = new String[] {"Up", "Down"};
                 this.nextMove = upDown[Const.random.nextInt(2)];
             }
-
             else {
                 String[] leftRight = new String[] {"Left", "Right"};
                 this.nextMove = leftRight[Const.random.nextInt(2)];
@@ -94,9 +93,9 @@ class PlayShadowBoxing {
         this.players = new ArrayList<>(Arrays.asList(player1, player2));
     }
 
-    public void newGame() {
+    public void newGame(int round) {
         getFirstGuesser();
-        round = 1;
+        this.round = round;
         playRound();
     }
 
@@ -137,11 +136,6 @@ class PlayShadowBoxing {
             if (strikes == 3) {
                 System.out.printf("%s is the winner! %n", guesser.name);
                 System.out.printf("Better luck next time %s %n", defender.name);
-                
-                // 1. Add a point for the winner
-                // 2. Display the score on the screen
-                // 3. Ask the player if they want to play again
-
                 break;
             }
 
@@ -185,7 +179,13 @@ public class ShadowBoxing {
         Player player = new Player(playerName);
         Player computer = new ComputerPlayer("Computer");
         PlayShadowBoxing game = new PlayShadowBoxing(player, computer);
-        game.newGame();
+        game.newGame(1);
+
+        // 1. Add a point for the winner
+        // 2. Display the score on the screen
+        // 3. Ask the player if they want to play again
+        // 4. The program brakes if a player enters the wrong value, can you add input validation?
+        // 5. Can you update this to have both a vs computer option and a 2 player option?
     }
 }
 
